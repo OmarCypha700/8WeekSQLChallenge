@@ -1,6 +1,6 @@
 # 8WeekSQLChallenge
-This repository contains answers and solutions to Danny Ma's 8 week challenge. This challenge tests the understanding of sql data manipulation and also the application of sql to solve real world problems.
-I used MySQL for this challenge.
+This repository contains solutions to Danny Ma's 8 week challenge. This challenge tests the understanding of sql data manipulation and also the application of sql to solve real world problems.
+Tech stack: MySQL
 
 ## Table of Contents 
 

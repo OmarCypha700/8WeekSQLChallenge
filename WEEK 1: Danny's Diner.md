@@ -1,6 +1,7 @@
 ### 1. What is the total amount each customer spent at the restaurant?
 ``` sql
-SELECT customer_id, SUM(menu.price) AS total_amt_spent
+SELECT customer_id, 
+       SUM(menu.price) AS total_amt_spent
 FROM dannys_diner.sales AS sales
 JOIN dannys_diner.menu AS menu
 USING(product_id)
@@ -16,7 +17,8 @@ ORDER BY customer_id;
 
 ### 2. How many days has each customer visited the restaurant?
 ``` sql
-SELECT customer_id, COUNT(DISTINCT order_date) AS num_days_visited
+SELECT customer_id, 
+       COUNT(DISTINCT order_date) AS num_days_visited
 FROM dannys_diner.sales
 GROUP BY customer_id
 ORDER BY customer_id;
@@ -30,10 +32,10 @@ ORDER BY customer_id;
 
 ### 3. What was the first item from the menu purchased by each customer?
 ```sql 
-SELECT sub.customer_id, menu.product_name AS first_item_purchased
+SELECT sub.customer_id, 
+       menu.product_name AS first_item_purchased
 FROM (
-  SELECT *,
-    ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date) AS 'row'
+  SELECT *, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date) AS 'row'
   FROM dannys_diner.sales
 ) sub
 JOIN dannys_diner.menu AS menu 
@@ -52,8 +54,9 @@ ORDER BY sub.customer_id;
 ### 4. What is the most purchased item on the menu and how many times was it purchased by all customers?
 ``` sql
 SELECT sub.product_name, total_buys
-FROM (SELECT menu.product_name AS product_name, COUNT(sales.product_id) total_buys,
-		ROW_NUMBER() OVER (ORDER BY sales.product_id) AS 'row'
+FROM (SELECT menu.product_name AS product_name, 
+             COUNT(sales.product_id) total_buys,
+	     ROW_NUMBER() OVER (ORDER BY sales.product_id) AS 'row'
 FROM dannys_diner.sales AS sales
 INNER JOIN dannys_diner.menu AS menu
 USING(product_id)
@@ -67,9 +70,13 @@ WHERE sub.row = 3;
 
 ### 5. Which item was the most popular for each customer?
 ``` sql 
-SELECT sub.customer_id, sub.product_name, sub.times_purchased
+SELECT sub.customer_id, 
+       sub.product_name, 
+       sub.times_purchased
 FROM (
-  SELECT sales.customer_id AS customer_id, menu.product_name AS product_name, COUNT(*) AS times_purchased,
+  SELECT sales.customer_id AS customer_id, 
+  	 menu.product_name AS product_name, 
+	 COUNT(*) AS times_purchased,
          RANK() OVER (PARTITION BY sales.customer_id ORDER BY COUNT(*) DESC) AS 'rank'
   FROM dannys_diner.sales AS sales
   JOIN dannys_diner.menu AS menu
@@ -90,15 +97,14 @@ WHERE sub.rank < 2;
 ### 6. Which item was purchased first by the customer after they became a member?
 ``` sql 
 SELECT sub.customer, 
-	     sub.product_name,
+       sub.product_name,
        sub.order_date,
        sub.join_date
 FROM (SELECT sales.customer_id AS customer, 
-			 menu.product_name AS product_name, 
+	     menu.product_name AS product_name, 
              sales.order_date AS order_date, 
              member.join_date AS join_date,
-        ROW_NUMBER() OVER 
-      		(PARTITION BY sales.customer_id ORDER BY sales.order_date) AS 'row'
+        ROW_NUMBER() OVER (PARTITION BY sales.customer_id ORDER BY sales.order_date) AS 'row'
         FROM dannys_diner.members AS member
         INNER JOIN dannys_diner.sales AS sales
         ON member.customer_id = sales.customer_id
@@ -116,15 +122,14 @@ WHERE sub.row = 1;
 ### 7. Which item was purchased just before the customer became a member?
 ``` sql 
 SELECT sub.customer, 
-	   sub.product, 
+       sub.product, 
        sub.order_date, 
        sub.join_date
 FROM (SELECT sales.customer_id AS customer, 
-			 menu.product_name AS product, 
+	     menu.product_name AS product, 
              sales.order_date AS order_date, 
              member.join_date AS join_date,
-        ROW_NUMBER() OVER 
-      		(PARTITION BY sales.customer_id ORDER BY sales.order_date DESC) AS 'row'
+        ROW_NUMBER() OVER (PARTITION BY sales.customer_id ORDER BY sales.order_date DESC) AS 'row'
         FROM dannys_diner.members member
         INNER JOIN dannys_diner.sales AS sales
         ON member.customer_id = sales.customer_id
@@ -142,7 +147,7 @@ WHERE sub.row = 1;
 ### 8. What is the total items and amount spent for each member before they became a member?
 ``` sql 
 SELECT sales.customer_id AS customer, 
-	   COUNT(sales.product_id) AS total_items_purchased, 
+       COUNT(sales.product_id) AS total_items_purchased, 
        SUM(menu.price) AS amt_spent
 FROM dannys_diner.sales AS sales
 INNER JOIN dannys_diner.menu AS menu
@@ -162,8 +167,8 @@ ORDER BY customer;
 ### 9. If each $1 spent equates to 10 points and sushi has a 2x points multiplier - how many points would each customer have?
 ``` sql 
 SELECT sales.customer_id AS customer_id,
-SUM(CASE WHEN menu.product_name = 'sushi' THEN menu.price * 20 
-     ELSE menu.price * 10 END) total_points
+       SUM(CASE WHEN menu.product_name = 'sushi' THEN menu.price * 20 
+     	   ELSE menu.price * 10 END) total_points
 FROM dannys_diner.sales AS sales
 INNER JOIN dannys_diner.menu AS menu
 ON sales.product_id = menu.product_id
@@ -183,10 +188,10 @@ FROM (
 -- Points in first week after customer joins program
     SELECT sales.customer_id AS customer_id, 
 	   SUM(menu.price * 20) AS points
-	FROM dannys_diner.sales AS sales
-	INNER JOIN dannys_diner.members AS member USING(customer_id)
-	INNER JOIN dannys_diner.menu AS menu USING(product_id)
-	WHERE sales.order_date >= member.join_date AND sales.order_date <= DATE_ADD(member.join_date , INTERVAL 1 WEEK)
+    FROM dannys_diner.sales AS sales
+    INNER JOIN dannys_diner.members AS member USING(customer_id)
+    INNER JOIN dannys_diner.menu AS menu USING(product_id)
+    WHERE sales.order_date >= member.join_date AND sales.order_date <= DATE_ADD(member.join_date , INTERVAL 1 WEEK)
     GROUP BY customer_id
     ORDER BY customer_id
 ) first_week
@@ -196,8 +201,8 @@ SELECT *
 FROM (
 -- Points in any other week in January
 SELECT sales.customer_id AS customer_id,
-	   SUM(CASE WHEN menu.product_name = 'sushi' THEN menu.price * 20
-		   ELSE menu.price * 10 END) AS points
+       SUM(CASE WHEN menu.product_name = 'sushi' THEN menu.price * 20
+	   ELSE menu.price * 10 END) AS points
 FROM dannys_diner.sales AS sales
 INNER JOIN dannys_diner.members AS member USING(customer_id)
 INNER JOIN dannys_diner.menu AS menu USING(product_id)

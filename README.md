@@ -10,4 +10,4 @@ Tech stack: MySQL
 ### Entity Relationship Diagram (ERD)
 ![ERD Week 1](https://user-images.githubusercontent.com/118802056/235641793-09208928-7b15-4869-8db1-472733e5a4f0.png)
 <br>
-[My solution](https://github.com/OmarCypha700/8WeekSQLChallenge/blob/main/WEEK%201:%20Danny's%20Diner.md)
+[Solution](https://github.com/OmarCypha700/8WeekSQLChallenge/blob/main/WEEK%201:%20Danny's%20Diner.md)

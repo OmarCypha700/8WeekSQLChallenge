@@ -185,33 +185,36 @@ ORDER BY sales.customer_id;
 ``` sql 
 SELECT *
 FROM (
--- Points in first week after customer joins program
+    -- Points in the first week after customer joins the program
     SELECT sales.customer_id AS customer_id, 
-	   SUM(menu.price * 20) AS points
+           SUM(menu.price * 20) AS points
     FROM dannys_diner.sales AS sales
-    INNER JOIN dannys_diner.members AS member USING(customer_id)
-    INNER JOIN dannys_diner.menu AS menu USING(product_id)
-    WHERE sales.order_date >= member.join_date AND sales.order_date <= DATE_ADD(member.join_date , INTERVAL 1 WEEK)
+    INNER JOIN dannys_diner.members AS member USING (customer_id)
+    INNER JOIN dannys_diner.menu AS menu USING (product_id)
+    WHERE sales.order_date >= member.join_date 
+          AND sales.order_date <= DATE_ADD(member.join_date, INTERVAL 1 WEEK)
     GROUP BY customer_id
     ORDER BY customer_id
-) first_week
+) AS first_week
+
 -- Stacking on top of points in other weeks
 UNION ALL 
+
 SELECT *
 FROM (
--- Points in any other week in January
-SELECT sales.customer_id AS customer_id,
-       SUM(CASE WHEN menu.product_name = 'sushi' THEN menu.price * 20
-	   ELSE menu.price * 10 END) AS points
-FROM dannys_diner.sales AS sales
-INNER JOIN dannys_diner.members AS member USING(customer_id)
-INNER JOIN dannys_diner.menu AS menu USING(product_id)
-WHERE sales.order_date < member.join_date 
-AND sales.order_date > DATE_ADD(member.join_date , INTERVAL 1 WEEK)
-AND sales.order_date BETWEEN '2021-01-01' AND '2021-01-31'
-GROUP BY customer_id
-ORDER BY customer_id
-) other_weeks;
+    -- Points in any other week in January
+    SELECT sales.customer_id AS customer_id,
+           SUM(CASE WHEN menu.product_name = 'sushi' THEN menu.price * 20
+                    ELSE menu.price * 10 END) AS points
+    FROM dannys_diner.sales AS sales
+    INNER JOIN dannys_diner.members AS member USING (customer_id)
+    INNER JOIN dannys_diner.menu AS menu USING (product_id)
+    WHERE sales.order_date < member.join_date 
+          AND sales.order_date > DATE_ADD(member.join_date, INTERVAL 1 WEEK)
+          AND sales.order_date BETWEEN '2021-01-01' AND '2021-01-31'
+    GROUP BY customer_id
+    ORDER BY customer_id
+) AS other_weeks;
 ```
 | customer_id | points |
 |-------------|--------|

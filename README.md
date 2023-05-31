@@ -19,5 +19,5 @@ Tech stack: MySQL
 ### Entity Relationship Diagram (ERD)
 ![ERD Pizza Runner](ERD's/pizza_runner_ERD.jpg)
 <br>
-[Solution]()
+[Solution](Week 2: Pizza Runner.md)
 

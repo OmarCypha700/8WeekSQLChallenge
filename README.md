@@ -12,7 +12,7 @@ Tech stack: MySQL
 ### Entity Relationship Diagram (ERD)
 ![ERD Danny's Diner](ERD's/danny's_diner_ERD.jpg)
 <br>
-[Solution](WEEK 1: Danny's Diner.md)
+[Solution](https://github.com/OmarCypha700/8WeekSQLChallenge/blob/main/WEEK%201%3A%20Danny's%20Diner.md)
 
 ## Case Study 2:
 ## [Pizza Runner](https://8weeksqlchallenge.com/case-study-2/)

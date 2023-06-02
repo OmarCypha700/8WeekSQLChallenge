@@ -1,4 +1,4 @@
-# Week 2: Pizza Runner
+# Week 2: Pizza Runner 🍕
 ## Table of Contents
 - [Data Cleaning](#data-cleaning)
 - [Pizza Metrics](#a-pizza-metrics)

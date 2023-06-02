@@ -545,16 +545,16 @@ order_id    |	rating
 10	    |   5
 
 ##### 4. Using your newly generated table - can you join all of the information together to form a table which has the following information for successful deliveries?
--- customer_id
--- order_id
--- runner_id
--- rating
--- order_time
--- pickup_time
--- Time between order and pickup
--- Delivery duration
--- Average speed
--- Total number of pizzas
+- customer_id
+- order_id
+- runner_id
+- rating
+- order_time
+- pickup_time
+- Time between order and pickup
+- Delivery duration
+- Average speed
+- Total number of pizzas
 
 ```sql
 SELECT 
@@ -584,7 +584,7 @@ GROUP BY
 ![Section C Q4](ERD's/SD_Q4.jpg)
 
 ##### 5. If a Meat Lovers pizza was $12 and Vegetarian $10 fixed prices with no cost for extras and each runner is paid $0.30 per kilometre traveled 
--- how much money does Pizza Runner have left over after these deliveries?
+- how much money does Pizza Runner have left over after these deliveries?
 
 ```sql
 WITH income_CTE AS (

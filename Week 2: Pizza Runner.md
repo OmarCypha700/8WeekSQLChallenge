@@ -1,3 +1,117 @@
+## DATA CLEANING
+```sql
+-- ------------------------
+--  CUSTOMER_ORDERS TABLE
+-- ------------------------
+-- Handling null values and empty strings.
+UPDATE customer_orders
+SET
+  exclusions = NULLIF(NULLIF(exclusions, ''), 'null'),
+  extras = NULLIF(NULLIF(extras, ''), 'null');
+  
+ -- -------------------------------------------------------------------------------------------------------------------------------
+ -- Creating a row number to retain each row number since spliting the extras and exclusions into rows will result in duplicate rows
+ -- -------------------------------------------------------------------------------------------------------------------------------
+  
+DROP TEMPORARY TABLE IF EXISTS new_customer_orders;
+
+CREATE TEMPORARY TABLE new_customer_orders AS
+SELECT *,
+	ROW_NUMBER() OVER() AS 'row_number'
+FROM customer_orders;
+
+SELECT *
+FROM new_customer_orders;
+
+-- -------------------------------------------------
+-- Create a TEMP TABLE for 'customer_orders_cleaned'
+-- And spliting the comma seperated values in the extras and exclusions column into rows
+-- ------------------------------------------------
+
+CREATE TEMPORARY TABLE customer_orders_cleaned
+SELECT 
+  nco.row_number,
+  order_id,
+  customer_id,
+  pizza_id,
+  CAST(TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(nco.extras, ',', n1.n), ',', -1)) AS UNSIGNED) AS extras,
+  CAST(TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(co.exclusions, ',', n2.n), ',', -1)) AS UNSIGNED) AS exclusions,
+  order_time
+FROM
+  pizza_runner.new_customer_orders nco
+LEFT JOIN
+  (SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5) n1
+ON
+  n1.n <= LENGTH(nco.extras) - LENGTH(REPLACE(nco.extras, ',', '')) + 1
+LEFT JOIN
+  (SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5) n2
+ON
+  n2.n <= LENGTH(nco.exclusions) - LENGTH(REPLACE(nco.exclusions, ',', '')) + 1;
+
+SELECT *
+FROM customer_orders_cleaned;
+
+-- ----------------------
+-- RUNNER_ORDERS TABLE
+-- ----------------------
+
+-- ----------------------------------------
+-- Handlling null values and empty strings
+-- ----------------------------------------
+
+UPDATE runner_orders
+SET
+  cancellation = NULLIF(NULLIF(cancellation, ''), 'null'),
+  distance = NULLIF(NULLIF(distance, ''), 'null'),
+  duration = NULLIF(NULLIF(duration, ''), 'null');
+
+-- ---------------------------------------
+-- Cleaning distance and duration columns
+-- ---------------------------------------
+
+UPDATE runner_orders
+SET
+  distance = REPLACE(distance, 'km', ''),
+  duration = SUBSTR(duration, 1, 2);
+
+-- --------------------------------------------
+-- RENAMING DISTANCE AND DURATION COLUMN NAMES
+-- --------------------------------------------
+
+ALTER TABLE runner_orders
+RENAME COLUMN distance TO distance_km;
+
+ALTER TABLE runner_orders
+RENAME COLUMN duration TO duration_min;
+
+-- --------------------
+-- PIZZA RECIPES TABLE
+-- --------------------
+
+-- --------------------------------------------------------------------------
+-- Handlling commas in the toppings column into rows and store in a temporary column
+-- -------------------------------------------------------------------------
+DROP TEMPORARY TABLE IF EXISTS pizza_recipes_clean;
+
+CREATE TEMPORARY TABLE pizza_recipes_clean as (
+SELECT pr.pizza_id,
+       REPLACE(SUBSTRING_INDEX(SUBSTRING_INDEX(pr.toppings, ',', numbers.n), ',', -1), ' ', '') AS toppings
+FROM (select 1 AS n UNION ALL
+		select 2 UNION ALL
+        select 3 UNION ALL
+        select 4 UNION ALL
+        select 5 UNION ALL
+        select 6 UNION ALL
+        select 7 UNION ALL
+        select 8 ) AS numbers
+INNER JOIN pizza_recipes pr 
+ON CHAR_LENGTH(pr.toppings) - CHAR_LENGTH(REPLACE(pr.toppings, ',', '')) >= numbers.n-1
+ORDER BY pr.pizza_id, n);
+
+SELECT *
+FROM pizza_recipes_clean;
+```
+
 ## A. Pizza Metrics
 ##### 1. How many pizzas were ordered?
 ``` sql

@@ -1,5 +1,5 @@
 ## A. Pizza Metrics
-### 1. How many pizzas were ordered?
+##### 1. How many pizzas were ordered?
 ``` sql
 SELECT COUNT(order_id) as total_pizza
 FROM pizza_runner.customer_orders;
@@ -8,7 +8,7 @@ FROM pizza_runner.customer_orders;
 |-------------|
 | 14          |
 
-### 2. How many unique customer orders were made?
+##### 2. How many unique customer orders were made?
 ``` sql
 SELECT COUNT(DISTINCT order_id) AS unique_orders
 FROM pizza_runner.customer_orders;
@@ -17,7 +17,7 @@ FROM pizza_runner.customer_orders;
 |-------------|
 | 14          |
 
-### 3. How many successful orders were delivered by each runner?
+##### 3. How many successful orders were delivered by each runner?
 ``` sql
 SELECT runner_id, COUNT(order_id) AS orders_delivered
 FROM pizza_runner.runner_orders
@@ -30,7 +30,7 @@ GROUP BY runner_id;
 | 2         | 3    |
 | 3         | 1    |
 
-### 4. How many of each type of pizza was delivered?
+##### 4. How many of each type of pizza was delivered?
 
 ```sql
 SELECT pizza_id, COUNT(pizza_id) AS num_delivered
@@ -44,7 +44,7 @@ GROUP BY pizza_id;
 | 1         | 9    |
 | 2         | 3    |
 
-### 5. How many Vegetarian and Meatlovers were ordered by each customer?
+##### 5. How many Vegetarian and Meatlovers were ordered by each customer?
 ```sql
 SELECT co.customer_id, 
        COUNT(CASE WHEN pn.pizza_name = 'Vegetarian' THEN 1 ELSE NULL END) AS vegetarian,
@@ -62,7 +62,7 @@ GROUP BY co.customer_id;
  104             | 0            | 3
  105             | 1            | 0
 
-### 6. What was the maximum number of pizzas delivered in a single order?
+##### 6. What was the maximum number of pizzas delivered in a single order?
 ```sql
 SELECT co.order_id, COUNT(pizza_id) as pizza_delivered
 FROM pizza_runner.customer_orders co
@@ -77,7 +77,7 @@ LIMIT 1;
 |----------|------|
 | 4        | 3    |
 
-### 7. For each customer, how many delivered pizzas had at least 1 change and how many had no changes?
+##### 7. For each customer, how many delivered pizzas had at least 1 change and how many had no changes?
 ```sql
 SELECT co.customer_id, 
 	  COUNT(CASE WHEN (co.exclusions IS NOT NULL OR co.extras IS NOT NULL) THEN pizza_id END) AS changed_orders,
@@ -96,7 +96,7 @@ GROUP BY co.customer_id;
   104           | 2                 | 1
   105           | 1                 | 0
 
-### 8. How many pizzas were delivered that had both exclusions and extras?
+##### 8. How many pizzas were delivered that had both exclusions and extras?
 ```sql
 SELECT co.customer_id, COUNT(pizza_id) count
 FROM pizza_runner.customer_orders co
@@ -111,7 +111,7 @@ GROUP BY co.customer_id;
 |-------------|-------|
 | 104         | 1     |
 
-### 9. What was the total volume of pizzas ordered for each hour of the day?
+##### 9. What was the total volume of pizzas ordered for each hour of the day?
 ``` sql
 SELECT EXTRACT(hour FROM order_time) AS hour, 
 	   COUNT(pizza_id) AS pizza_ordered
@@ -128,7 +128,7 @@ ORDER BY hour;
  21       | 3
  23       | 3
 
-### 10. What was the volume of orders for each day of the week?
+##### 10. What was the volume of orders for each day of the week?
 ``` sql
 SELECT DAYNAME(order_time) AS day_of_week, 
   COUNT(pizza_id) AS pizza_ordered
@@ -143,7 +143,8 @@ GROUP BY day_of_week;
  Friday         | 1
 
 ## B. Runner and Customer Experience
-### 1. How many runners signed up for each 1 week period? (i.e. week starts 2021-01-01)
+
+##### 1. How many runners signed up for each 1 week period? (i.e. week starts 2021-01-01)
 ```sql
 SELECT EXTRACT(week FROM registration_date + INTERVAL 3 day) AS week, 
 	   MIN(registration_date) AS start_week,
@@ -158,7 +159,7 @@ ORDER BY week;
  2            | 2021-01-08     | 1
  3            | 2021-01-15     | 1
  
-### 2. What was the average time in minutes it took for each runner to arrive at the Pizza Runner HQ to pickup the order?
+##### 2. What was the average time in minutes it took for each runner to arrive at the Pizza Runner HQ to pickup the order?
 ```sql
 SELECT ro.runner_id, 
 	   CAST(AVG(TIMEDIFF(ro.pickup_time, co.order_time)) AS TIME) AS avg_time
@@ -173,7 +174,7 @@ runner_id   |	avg_time
 2	    |	00:23:59
 3	    |	00:10:28
 
-### 3. Is there any relationship between the number of pizzas and how long the order takes to prepare?
+##### 3. Is there any relationship between the number of pizzas and how long the order takes to prepare?
 ```sql
 SELECT num_pizzas, CAST(AVG(prep_time) AS TIME)AS avg_prep_time
 FROM (
@@ -195,7 +196,7 @@ runner_id   |	avg_time
 
 Looking at the average time taken and the number of pizzas prepared within that time, there seem to be a relationship between the number of pizzas and how long it takes to prepare.
 
-### 4. What was the average distance travelled for each customer?
+##### 4. What was the average distance travelled for each customer?
 ```sql
 SELECT co.customer_id, CEIL(AVG(distance_km)) AS avg_distance_km
 FROM pizza_runner.runner_orders AS ro
@@ -211,7 +212,7 @@ GROUP BY co.customer_id;
 104	      |	10
 105	      | 25
 
-### 5. What was the difference between the longest and shortest delivery times for all orders?
+##### 5. What was the difference between the longest and shortest delivery times for all orders?
 ```sql
 SELECT (MAX(duration_min) - MIN(duration_min)) AS diff
 FROM pizza_runner.runner_orders;
@@ -220,7 +221,7 @@ FROM pizza_runner.runner_orders;
 |------|
 | 30   |
 
-### 6. What was the average speed for each runner for each delivery and do you notice any trend for these values?
+##### 6. What was the average speed for each runner for each delivery and do you notice any trend for these values?
 ```sql
 SELECT runner_id, 
 	   CEIL(AVG(distance_km / (duration_min/60))) AS 'avg_speed_km/hr'
@@ -233,7 +234,7 @@ runner_id  |	avg_speed_km/hr
 2	   |	63
 3	   |	40
 
-### 7. What is the successful delivery percentage for each runner?
+##### 7. What is the successful delivery percentage for each runner?
 ```sql
 SELECT runner_id,
        COUNT(*) AS total_deliveries,
@@ -251,7 +252,7 @@ runner_id   |	total_deliveries     |	successful_deliveries | success_percentage
 
 ## C. INGREDIENT OPTIMIZATION
 
-### 1. What are the standard ingredients for each pizza?
+##### 1. What are the standard ingredients for each pizza?
 ```sql
 SELECT prc.pizza_id,
 		GROUP_CONCAT(pt.topping_name SEPARATOR ', ') AS toppings
@@ -265,7 +266,7 @@ pizza_id    |	toppings
 1	    | Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
 2	    | Cheese, Mushrooms, Onions, Peppers, Tomatoes, Tomato Sauce
 
-### 2. What was the most commonly added extra?
+##### 2. What was the most commonly added extra?
 ```sql
 SELECT coc.extras,
        pt.topping_name,
@@ -281,7 +282,7 @@ extras | topping_name | count
 -------|--------------|------
 1      | Bacon	      |	4
 
-### 3. What was the most common exclusion?
+##### 3. What was the most common exclusion?
 ```sql
 SELECT coc.exclusions,
        pt.topping_name,
@@ -297,7 +298,7 @@ exclusions | topping_name | count
 -----------|--------------|------
 4          | Cheese	  | 4
 
-### 4. Generate an order item for each record in the customers_orders table in the format of one of the following:
+##### 4. Generate an order item for each record in the customers_orders table in the format of one of the following:
 - Meat Lovers
 - Meat Lovers - Exclude Beef
 - Meat Lovers - Extra Bacon
@@ -390,10 +391,10 @@ ORDER BY
   nco.order_id,
   nco.row_number;
 ```
-
+#### Results
 ![Section C Q4](ERD's/SC_Q4.jpg)
 
-## 6. What is the total quantity of each ingredient used in all delivered pizzas sorted by most frequent first?
+##### 6. What is the total quantity of each ingredient used in all delivered pizzas sorted by most frequent first?
 
 ```sql
 -- ----------------------------------------------------------------------------------------------------------------------------------
@@ -476,16 +477,133 @@ ORDER BY quantity_used DESC;
 
 ## D. PRICING AND RATES
 
+##### 1. If a Meat Lovers pizza costs $12 and Vegetarian costs $10 and there were no charges for changes - how much money has Pizza Runner made so far if there are no delivery fees?
+```sql
+SELECT SUM(CASE WHEN pizza_id = 1 THEN 12
+		WHEN pizza_id = 2 THEN 10
+           END) AS money_made
+FROM pizza_runner.customer_orders
+JOIN pizza_runner.runner_orders USING (order_id)
+WHERE cancellation IS NULL;
+```
+ money_made
+:---------:
+  138
 
+##### 2. What if there was an additional $1 charge for any pizza extras?
+- Add cheese is $1 extra
+```sql
+WITH price1_CTE AS (
+	SELECT SUM(CASE WHEN pizza_id = 1 THEN 12 ELSE 10 END) AS 'money_made'
+	FROM pizza_runner.customer_orders
+	JOIN pizza_runner.runner_orders USING (order_id)
+	WHERE cancellation IS NULL
+),
+price2_CTE AS (
+	SELECT SUM(CASE WHEN extras = 4 THEN 2 ELSE 1 END) AS 'extras_charged'
+	FROM pizza_runner.customer_orders_cleaned
+	JOIN pizza_runner.runner_orders USING (order_id)
+	WHERE cancellation IS NULL
+    AND extras IS NOT NULL
+)
+SELECT (money_made + extras_charged) AS adjusted_money_made
+FROM price1_CTE, price2_CTE;
+```
+ adjusted_money_made
+:-------------------:
+  146
 
+##### 3. The Pizza Runner team now wants to add an additional ratings system that allows customers to rate their runner, how would you design an additional table for this new dataset - generate a schema for this new table and insert your own data for ratings for each successful customer order between 1 to 5.
+```sql
+DROP TABLE IF EXISTS runner_ratings;
+CREATE TABLE pizza_runner.runner_ratings (
+  order_id INT,
+  rating INT
+);
+INSERT INTO pizza_runner.runner_ratings (order_id, rating)
+VALUES 
+  (1,5),
+  (2,3),
+  (3,2),
+  (4,4),
+  (5,2),
+  (7,3),
+  (8,4),
+  (10,5);
 
+SELECT * FROM pizza_runner.runner_ratings;
+```
+order_id    |	rating
+------------|---------
+1           |	5
+2	    |   3
+3	    |   2
+4	    |   4
+5	    |   2
+7	    |   3
+8	    |   4
+10	    |   5
 
+##### 4. Using your newly generated table - can you join all of the information together to form a table which has the following information for successful deliveries?
+-- customer_id
+-- order_id
+-- runner_id
+-- rating
+-- order_time
+-- pickup_time
+-- Time between order and pickup
+-- Delivery duration
+-- Average speed
+-- Total number of pizzas
 
+```sql
+SELECT 
+      co.customer_id,
+      co.order_id,
+      ro.runner_id,
+      rr.rating,
+      co.order_time,
+      ro.pickup_time,
+      CAST(TIMEDIFF(ro.pickup_time, co.order_time) AS TIME) AS 'time_btwn_order_&_pickup',
+      ro.duration_min,
+      CEIL(AVG(distance_km / (duration_min/60))) AS 'avg_speed_km/hr',
+      COUNT(pizza_id) AS num_pizzas
+FROM pizza_runner.customer_orders AS co
+JOIN pizza_runner.runner_orders AS ro USING (order_id)
+JOIN pizza_runner.runner_ratings AS rr USING (order_id)
+GROUP BY 
+  co.customer_id,
+  co.order_id,
+  ro.runner_id,
+  rr.rating,
+  co.order_time,
+  ro.pickup_time, 
+  ro.duration_min;
+```
+#### Results
+![Section C Q4](ERD's/SD_Q4.jpg)
 
+##### 5. If a Meat Lovers pizza was $12 and Vegetarian $10 fixed prices with no cost for extras and each runner is paid $0.30 per kilometre traveled 
+-- how much money does Pizza Runner have left over after these deliveries?
 
-
-
-
-
-
-
+```sql
+WITH income_CTE AS (
+	SELECT SUM(CASE WHEN c.pizza_id = 1 THEN 12 ELSE 10 END) AS money_made
+	 FROM pizza_runner.customer_orders c
+	 INNER JOIN pizza_runner.pizza_names pn
+	 ON c.pizza_id = pn.pizza_id
+	 INNER JOIN pizza_runner.runner_orders r
+	 ON c.order_id = r.order_id
+	 WHERE r.cancellation IS NULL
+     ),
+expense_CTE AS(
+SELECT SUM((distance_km * 0.30)) AS total_driver_fee
+FROM pizza_runner.runner_orders
+WHERE distance_km IS NOT NULL
+)
+SELECT ROUND(money_made - total_driver_fee, 2) AS leftover_amt
+FROM income_CTE, expense_CTE;
+```
+ leftover_amt
+:--------------:
+  94.44

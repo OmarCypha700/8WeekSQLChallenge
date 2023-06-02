@@ -1,3 +1,11 @@
+# Week 2: Pizza Runner
+## Table of Contents
+- [Data Cleaning](#data-cleaning)
+- [Pizza Metrics](#pizza-metrics)
+- [Runner and Customer Experience](#runner-and-customer-experience)
+- [Ingredient Optimization](#ingredient-optimization)
+- [Pricing and Rates](#pricing-and-rates)
+
 ## DATA CLEANING
 ```sql
 -- ------------------------

@@ -74,8 +74,8 @@ ORDER BY pizza_delivered DESC
 LIMIT 1;
 ```
 | order_id | pizza_delivered |
-|-----------|------|
-| 4         | 3    |
+|----------|------|
+| 4        | 3    |
 
 ### 7. For each customer, how many delivered pizzas had at least 1 change and how many had no changes?
 ```sql
@@ -143,3 +143,349 @@ GROUP BY day_of_week;
  Friday         | 1
 
 ## B. Runner and Customer Experience
+### 1. How many runners signed up for each 1 week period? (i.e. week starts 2021-01-01)
+```sql
+SELECT EXTRACT(week FROM registration_date + INTERVAL 3 day) AS week, 
+	   MIN(registration_date) AS start_week,
+	   COUNT(*) AS sign_ups
+FROM pizza_runner.runners
+GROUP BY week
+ORDER BY week;
+```
+ week         | start_week     | sign_ups
+:------------:|:--------------:|------------
+ 1            | 2021-01-01     | 2
+ 2            | 2021-01-08     | 1
+ 3            | 2021-01-15     | 1
+ 
+### 2. What was the average time in minutes it took for each runner to arrive at the Pizza Runner HQ to pickup the order?
+```sql
+SELECT ro.runner_id, 
+	   CAST(AVG(TIMEDIFF(ro.pickup_time, co.order_time)) AS TIME) AS avg_time
+FROM pizza_runner.runner_orders AS ro
+JOIN pizza_runner.customer_orders AS co
+USING (order_id)
+GROUP BY ro.runner_id;
+```
+runner_id   |	avg_time
+------------|------------
+1	    |	00:15:54
+2	    |	00:23:59
+3	    |	00:10:28
+
+### 3. Is there any relationship between the number of pizzas and how long the order takes to prepare?
+```sql
+SELECT num_pizzas, CAST(AVG(prep_time) AS TIME)AS avg_prep_time
+FROM (
+	SELECT co.order_id, COUNT(co.pizza_id) as num_pizzas, 
+		   CAST(TIMEDIFF(ro.pickup_time, co.order_time) AS TIME) AS prep_time
+	FROM pizza_runner.runner_orders ro
+	JOIN pizza_runner.customer_orders co
+	USING (order_id)
+	WHERE ro.pickup_time IS NOT NULL
+	GROUP BY co.order_id, ro.pickup_time, co.order_time
+) AS sub
+GROUP BY num_pizzas;
+```
+runner_id   |	avg_time
+------------|------------
+1	    |	00:12:21
+2	    |	00:18:23
+3	    |	'00:29:17'
+
+Looking at the average time taken and the number of pizzas prepared within that time, there seem to be a relationship between the number of pizzas and how long it takes to prepare.
+
+### 4. What was the average distance travelled for each customer?
+```sql
+SELECT co.customer_id, CEIL(AVG(distance_km)) AS avg_distance_km
+FROM pizza_runner.runner_orders AS ro
+JOIN pizza_runner.customer_orders AS co
+USING (order_id)
+GROUP BY co.customer_id;
+```
+ customer_id  |	avg_distance_km
+------------- |-----------------
+101	      | 20
+102	      |	17
+103	      |	24
+104	      |	10
+105	      | 25
+
+### 5. What was the difference between the longest and shortest delivery times for all orders?
+```sql
+SELECT (MAX(duration_min) - MIN(duration_min)) AS diff
+FROM pizza_runner.runner_orders;
+```
+| diff |
+|------|
+| 30   |
+
+### 6. What was the average speed for each runner for each delivery and do you notice any trend for these values?
+```sql
+SELECT runner_id, 
+	   CEIL(AVG(distance_km / (duration_min/60))) AS 'avg_speed_km/hr'
+FROM pizza_runner.runner_orders
+GROUP BY runner_id;
+```
+runner_id  |	avg_speed_km/hr
+-----------|------------------
+1	   |	46
+2	   |	63
+3	   |	40
+
+### 7. What is the successful delivery percentage for each runner?
+```sql
+SELECT runner_id,
+       COUNT(*) AS total_deliveries,
+       SUM(CASE WHEN cancellation IS NULL THEN 1 ELSE 0 END) AS successful_deliveries,
+       (SUM(CASE WHEN cancellation IS NULL THEN 1 ELSE 0 END) / COUNT(*)) * 100 AS success_percentage
+FROM pizza_runner.runner_orders
+GROUP BY runner_id;
+```
+runner_id   |	total_deliveries     |	successful_deliveries | success_percentage
+------------|------------------------|------------------------|--------------------
+1	    |	     4		     |	      4		      |	   100.0000
+2	    |	     4		     |	      3		      |    75.0000
+3	    |	     2		     |	      1		      |    50.0000
+
+
+## C. INGREDIENT OPTIMIZATION
+
+### 1. What are the standard ingredients for each pizza?
+```sql
+SELECT prc.pizza_id,
+		GROUP_CONCAT(pt.topping_name SEPARATOR ', ') AS toppings
+FROM pizza_recipes_clean AS prc
+JOIN pizza_runner.pizza_toppings AS pt
+ON prc.toppings = pt.topping_id
+GROUP BY prc.pizza_id;
+```
+pizza_id    |	toppings
+------------|------------
+1	    | Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
+2	    | Cheese, Mushrooms, Onions, Peppers, Tomatoes, Tomato Sauce
+
+### 2. What was the most commonly added extra?
+```sql
+SELECT coc.extras,
+       pt.topping_name,
+       COUNT(DISTINCT coc.row_number) AS count
+FROM customer_orders_cleaned AS coc
+JOIN pizza_toppings AS pt
+ON coc.extras = pt.topping_id
+GROUP BY extras, topping_name
+ORDER BY count DESC
+LIMIT 1;
+```
+extras | topping_name | count
+-------|--------------|------
+1      | Bacon	      |	4
+
+### 3. What was the most common exclusion?
+```sql
+SELECT coc.exclusions,
+       pt.topping_name,
+       COUNT(DISTINCT coc.row_number) AS count
+FROM customer_orders_cleaned AS coc
+JOIN pizza_toppings AS pt
+ON coc.exclusions = pt.topping_id
+GROUP BY exclusions, topping_name
+ORDER BY count DESC
+LIMIT 1;
+```
+exclusions | topping_name | count
+-----------|--------------|------
+4          | Cheese	  | 4
+
+### 4. Generate an order item for each record in the customers_orders table in the format of one of the following:
+- Meat Lovers
+- Meat Lovers - Exclude Beef
+- Meat Lovers - Extra Bacon
+- Meat Lovers - Exclude Cheese, Bacon - Extra Mushroom, Peppers
+
+```sql
+-- --------------------------------------------------------------------------------------------
+-- Create a temporary table to select all extras in a row with their row number as 'row_number'
+-- --------------------------------------------------------------------------------------------
+
+DROP TEMPORARY TABLE IF EXISTS extras_seperated;
+
+CREATE TEMPORARY TABLE extras_seperated AS
+SELECT 
+  nco.row_number,
+  CAST(TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(nco.extras, ',', n.n), ',', -1)) AS UNSIGNED) AS extra_id
+FROM pizza_runner.new_customer_orders nco
+CROSS JOIN
+  (SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 ) n
+WHERE
+  n.n <= LENGTH(nco.extras) - LENGTH(REPLACE(nco.extras, ',', '')) + 1;
+
+-- --------------------------------------------------------------------------------------------
+-- Create a temporary table to select all exclusions in a row with their row number as 'row_number'
+-- --------------------------------------------------------------------------------------------
+
+DROP TEMPORARY TABLE IF EXISTS exclusions_seperated;
+
+CREATE TEMPORARY TABLE exclusions_seperated AS
+SELECT 
+  nco.row_number,
+  CAST(TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(nco.exclusions, ',', n.n), ',', -1)) AS UNSIGNED) AS exclusions_id
+FROM pizza_runner.new_customer_orders nco
+CROSS JOIN
+  (SELECT 1 AS n UNION ALL SELECT 2 UNION ALL SELECT 3 ) n
+WHERE
+  n.n <= LENGTH(nco.exclusions) - LENGTH(REPLACE(nco.exclusions, ',', '')) + 1;  
+
+-- --------------------------------------------------------------------------------------
+-- Create a Common Table Expression (CTE) to get the extras and the exclusions, 
+-- combine them and join to the 'new_customer_orders' TEMP TABLE and 'pizza_names' table  
+-- --------------------------------------------------------------------------------------
+
+WITH extras_CTE AS (
+-- Get all extras, use 'GROUP_CONCAT' to arrange them horizontaly seperated by ',' and 'CONCAT' them with 'Extra'
+    SELECT
+        es.row_number,
+        CONCAT('Extra ', GROUP_CONCAT(pt.topping_name SEPARATOR ', ')) AS options
+    FROM extras_seperated AS es
+    JOIN pizza_runner.pizza_toppings AS pt ON es.extra_id = pt.topping_id
+    GROUP BY es.row_number
+),
+exclusions_CTE AS (
+-- Get all exclusions, use 'GROUP_CONCAT' to arrange them horizontaly seperated by ',' and 'CONCAT' them with 'Exclude'
+    SELECT
+        exs.row_number,
+        CONCAT('Exclude ', GROUP_CONCAT(pt.topping_name SEPARATOR ', ')) AS options
+    FROM exclusions_seperated AS exs
+    JOIN pizza_runner.pizza_toppings AS pt ON exs.exclusions_id = pt.topping_id
+    GROUP BY exs.row_number
+),
+-- Combine them with 'UNION' in the 'Union_CTE'
+Union_CTE AS (
+    SELECT * FROM extras_CTE
+    UNION
+    SELECT * FROM exclusions_CTE
+)
+-- Now select needed columns and concatinate the extras and exclusion of each order in one column 'pizza_information'
+-- join with Union_CTE and pizza_names to get the pizza names
+SELECT
+  nco.row_number,
+  nco.order_id,
+  nco.customer_id,
+  nco.pizza_id,
+  nco.order_time,
+  CONCAT_WS(' - ', pn.pizza_name, GROUP_CONCAT(u.options SEPARATOR ' - ')) AS pizza_information
+FROM
+  pizza_runner.new_customer_orders nco
+LEFT JOIN Union_CTE u ON nco.row_number = u.row_number
+JOIN
+  pizza_runner.pizza_names pn USING (pizza_id)
+GROUP BY
+  nco.row_number,
+  nco.order_id,
+  nco.customer_id,
+  nco.pizza_id,
+  nco.order_time,
+  pn.pizza_name
+ORDER BY
+  nco.order_id,
+  nco.row_number;
+```
+
+![Section C Q4](ERD's/SC_Q4.jpg)
+
+## 6. What is the total quantity of each ingredient used in all delivered pizzas sorted by most frequent first?
+
+```sql
+-- ----------------------------------------------------------------------------------------------------------------------------------
+-- Create a temporary table 'new_recipe' that shows pizza_id, topping_id and topping_name from pizza_recipe and pizza_toppings table
+-- ----------------------------------------------------------------------------------------------------------------------------------
+
+DROP TEMPORARY TABLE IF EXISTS new_recipe;
+CREATE TEMPORARY TABLE new_recipe (
+SELECT sub.*, topping_name
+FROM (
+SELECT 
+    pr.pizza_id,
+    CAST(TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(pr.toppings, ',', n.n), ',', -1)) AS UNSIGNED) AS topping_id
+FROM 
+    pizza_runner.pizza_recipes pr
+CROSS JOIN 
+    (
+        SELECT 1 AS n UNION ALL
+        SELECT 2 UNION ALL
+        SELECT 3 UNION ALL
+        SELECT 4 UNION ALL
+        SELECT 5 UNION ALL
+        SELECT 6 
+    ) n
+WHERE 
+    n.n <= LENGTH(pr.toppings) - LENGTH(REPLACE(pr.toppings, ',', '')) + 1
+ORDER BY pizza_id) sub
+JOIN pizza_runner.pizza_toppings AS pt
+ON sub.topping_id = pt.topping_id
+);
+
+
+WITH total_ingredients AS (
+  SELECT 
+    nco.row_number,
+    nr.topping_name,
+    CASE
+      -- if extra ingredient, add 2
+      WHEN nr.topping_id IN (
+          SELECT extra_id 
+          FROM extras_seperated es
+          WHERE es.row_number = nco.row_number) 
+      THEN 2
+      -- if excluded ingredient, add 0
+      WHEN nr.topping_id IN (
+          SELECT exclusions_id 
+          FROM exclusions_seperated exs 
+          WHERE nco.row_number = exs.row_number)
+      THEN 0
+      -- no extras, no exclusions, add 1
+      ELSE 1
+    END AS quantity
+  FROM pizza_runner.new_customer_orders nco
+  JOIN new_recipe nr
+    ON nr.pizza_id = nco.pizza_id
+  JOIN pizza_runner.pizza_names pn
+    ON pn.pizza_id = nco.pizza_id
+)
+SELECT 
+  topping_name,
+  SUM(quantity) AS quantity_used 
+FROM total_ingredients
+GROUP BY topping_name
+ORDER BY quantity_used DESC;
+```
+ topping_name  | quantity_used
+---------------|--------------
+  Mushrooms    | 13
+  Bacon        | 13
+  Chicken      | 11
+  Cheese       | 11
+  Pepperoni    | 10
+  Salami       | 10
+  Beef         | 10
+  BBQ Sauce    | 9 
+  Tomatoes     | 4
+  Onions       | 4
+  Peppers      | 4
+  Tomato Sauce | 4
+
+## D. PRICING AND RATES
+
+
+
+
+
+
+
+
+
+
+
+
+
+

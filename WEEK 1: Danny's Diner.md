@@ -1,3 +1,5 @@
+# Week 1: Danny's Diner 🍽
+
 ### 1. What is the total amount each customer spent at the restaurant?
 ``` sql
 SELECT customer_id, 

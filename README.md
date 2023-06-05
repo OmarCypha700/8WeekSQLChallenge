@@ -6,18 +6,26 @@ Tech stack: MySQL
 
 - [Case Study 1](#case-study-1)
 - [Case Study 2](#case-study-2)
+- [Case Study 3](#case-study-3)
 
 ## Case Study 1:
 ## [Danny's Diner](https://8weeksqlchallenge.com/case-study-1/)
 ### Entity Relationship Diagram (ERD)
-![ERD Danny's Diner](ERD's/danny's_diner_ERD.jpg)
+![ERD Danny's Diner](Images/ERD's/danny's_diner_ERD.jpg)
 <br>
 [Solution](https://github.com/OmarCypha700/8WeekSQLChallenge/blob/main/WEEK%201%3A%20Danny's%20Diner.md)
 
 ## Case Study 2:
 ## [Pizza Runner](https://8weeksqlchallenge.com/case-study-2/)
 ### Entity Relationship Diagram (ERD)
-![ERD Pizza Runner](ERD's/pizza_runner_ERD.jpg)
+![ERD Pizza Runner](Images/ERD's/pizza_runner_ERD.jpg)
 <br>
 [Solution](https://github.com/OmarCypha700/8WeekSQLChallenge/blob/main/Week%202%3A%20Pizza%20Runner.md)
+
+## Case Study 3:
+## [Foodie_Fi](https://8weeksqlchallenge.com/case-study-3/)
+### Entity Relationship Diagram (ERD)
+![ERD Pizza Runner](Images/ERD's/foodie_fi_ERD.jpg)
+<br>
+[Solution](https://github.com/OmarCypha700/8WeekSQLChallenge/blob/main/WEEK%203%3A%20Foodie_FI.md)
 

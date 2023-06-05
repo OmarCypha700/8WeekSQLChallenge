@@ -514,7 +514,7 @@ ORDER BY
   nco.row_number;
 ```
 #### Results
-![Section C Q4](ERD's/SC_Q4.jpg)
+![SC_Q4](https://github.com/OmarCypha700/8WeekSQLChallenge/assets/98944012/a56db7f4-4ff9-4ff8-9e7f-a2a5aabcbb91)
 
 ##### 6. What is the total quantity of each ingredient used in all delivered pizzas sorted by most frequent first?
 
@@ -702,8 +702,7 @@ GROUP BY
   ro.pickup_time, 
   ro.duration_min;
 ```
-#### Results
-![Section C Q4](ERD's/SD_Q4.jpg)
+![SD_Q4](https://github.com/OmarCypha700/8WeekSQLChallenge/assets/98944012/ecc0cf78-d0c8-4ab2-bab4-e6a2c1c33605)
 
 ##### 5. If a Meat Lovers pizza was $12 and Vegetarian $10 fixed prices with no cost for extras and each runner is paid $0.30 per kilometre traveled 
 - how much money does Pizza Runner have left over after these deliveries?

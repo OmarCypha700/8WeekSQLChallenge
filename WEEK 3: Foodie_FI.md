@@ -1,4 +1,4 @@
-# WEEK 3: Foodie_Fi 🍴
+# WEEK 3: Foodie_Fi 🍴🍝
 
 ## Table of Contents
 - [Customer Journey](#a-customer-journey)

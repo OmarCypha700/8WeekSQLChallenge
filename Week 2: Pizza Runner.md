@@ -728,3 +728,6 @@ FROM income_CTE, expense_CTE;
  leftover_amt
 :--------------:
   94.44
+
+
+## Check out [WEEK 3](https://github.com/OmarCypha700/8WeekSQLChallenge/blob/main/WEEK%203%3A%20Foodie_FI.md) solution

@@ -223,3 +223,6 @@ FROM (
 | A           | 1020   |
 | B           | 440    |
 <br>
+
+## Check out [WEEK 2](https://github.com/OmarCypha700/8WeekSQLChallenge/blob/main/Week%202%3A%20Pizza%20Runner.md) solution.
+

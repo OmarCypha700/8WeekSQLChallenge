@@ -301,3 +301,63 @@ Keeping track of the number of new customers acquired during a specific period a
 - #### Customer Satisfaction: 
 Regularly measuring customer satisfaction through surveys, feedback, or ratings. Understanding customer satisfaction levels helps measure the overall quality of the service and identify areas for improvement.
 
+
+### If the Foodie-Fi team were to create an exit survey shown to customers who wish to cancel their subscription, what questions would you include in the survey?
+```
+1. What was the primary reason for canceling your Foodie-Fi subscription?
+- Price concerns
+- Lack of desired features/content
+- Found an alternative service
+- Unresolved technical issues
+- Dissatisfied with the overall experience
+- Other (provide space for open-ended response)
+
+2. How would you rate your overall satisfaction with Foodie-Fi during your subscription period?
+- Very satisfied
+- Satisfied
+- Neutral
+- Dissatisfied
+- Very dissatisfied
+
+3. Did you find the platform easy to navigate and use?
+- Yes
+- No
+
+4. Which specific features or aspects of Foodie-Fi were the most valuable to you during your subscription?
+
+5. Were there any features or content that you expected but were missing from Foodie-Fi?
+
+6. Did you encounter any technical issues or difficulties while using Foodie-Fi?
+- Yes
+- No
+
+7. How would you rate the customer support you received from Foodie-Fi?
+- Excellent
+- Good
+- Fair
+- Poor
+
+8. Is there anything Foodie-Fi could have done differently to improve your experience and prevent you from canceling your subscription?
+
+9. Would you consider re-subscribing to Foodie-Fi in the future if certain changes or improvements were made?
+- Yes
+- No
+- Unsure
+
+10. How likely are you to recommend Foodie-Fi to a friend or colleague?
+- Very likely
+- Likely
+- Neutral
+- Unlikely
+- Very unlikely
+
+11. Any additional comments or feedback you would like to share?
+```
+
+
+
+
+
+
+
+

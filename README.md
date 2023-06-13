@@ -31,7 +31,7 @@ Tech stack: MySQL
 [Solution](https://github.com/OmarCypha700/8WeekSQLChallenge/blob/main/WEEK%203%3A%20Foodie_FI.md)
 
 ## Case Study 4:
-## [Data Bank](https://8weeksqlchallenge.com/case-study-3/)
+## [Data Bank](https://8weeksqlchallenge.com/case-study-4/)
 ### Entity Relationship Diagram (ERD)
 ![ERD Data Bank](Images/ERD's/data_bank_ERD.jpg)
 <br>

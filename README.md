@@ -8,6 +8,8 @@ Tech stack: MySQL
 - [Case Study 2](#case-study-2)
 - [Case Study 3](#case-study-3)
 - [Case Study 4](#case-study-4)
+- [Case Study 5](#case-study-5)
+
 
 ## Case Study 1:
 ## [Danny's Diner](https://8weeksqlchallenge.com/case-study-1/)
@@ -36,4 +38,11 @@ Tech stack: MySQL
 ![ERD Data Bank](Images/ERD's/data_bank_ERD.jpg)
 <br>
 [Solution](https://github.com/OmarCypha700/8WeekSQLChallenge/blob/main/WEEK%204%3A%20Data%20Bank.md)
+
+## Case Study 5:
+## [Data Mart](https://8weeksqlchallenge.com/case-study-5/)
+### Entity Relationship Diagram (ERD)
+![ERD Data Mart](Images/ERD's/data_mart_ERD.jpg)
+<br>
+[Solution](https://github.com/OmarCypha700/8WeekSQLChallenge/blob/main/WEEK%205:%20Data%20Mart.md)
 

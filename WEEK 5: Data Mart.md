@@ -6,7 +6,7 @@
 - [Before & After Analysis](#c-before-&-after-analysis)
 - [Bonus Question](#d-bonus-questions)
 
-## Data Cleaning Steps
+## A. Data Cleaning Steps
 
 #### In a single query, perform the following operations and generate a new table in the data_mart schema named clean_weekly_sales:
 - Convert the week_date to a DATE format
@@ -25,66 +25,177 @@
 
 - Generate a new avg_transaction column as the sales value divided by transactions rounded to 2 decimal places for each record
 
+```sql
+DROP TABLE IF EXISTS clean_weekly_sales;
 
+CREATE TABLE clean_weekly_sales AS
+SELECT  
+		STR_TO_DATE(week_date, '%d/%m/%y') AS week_date,
+		WEEK(STR_TO_DATE(week_date, '%d/%m/%y')) AS week_number,
+		MONTH(STR_TO_DATE(week_date, '%d/%m/%y')) AS month_number,
+		YEAR(STR_TO_DATE(week_date, '%d/%m/%y')) AS calendar_year,
+		region,
+		platform,
+        CASE WHEN segment LIKE 'C%' OR segment LIKE 'F%' THEN segment
+             ELSE 'unkown' END AS segment,
+		CASE 
+			WHEN segment LIKE '%1' THEN 'Young Adults'
+			WHEN segment LIKE '%2' THEN 'Middle Aged'
+			WHEN segment LIKE '%3' OR segment LIKE '%4' THEN 'Retirees'
+			ELSE 'unknown' END AS age_band,
+		CASE 
+			WHEN segment LIKE 'C%' THEN 'Couples'
+			WHEN segment LIKE 'F%' THEN 'Families'
+			ELSE 'unknown' END AS demographic,
+		customer_type,
+		transactions,
+		sales,
+		ROUND(sales/transactions, 2) AS avg_transaction
+FROM (
+SELECT  week_date,
+		region,
+        platform,
+        customer_type,
+        transactions,
+        sales,
+        segment
+FROM data_mart.weekly_sales
+) AS clean_data;
 
-## Data Extrapolation
+SELECT *
+FROM data_mart.clean_weekly_sales;
+```
+
+![SA_Q1](https://github.com/OmarCypha700/8WeekSQLChallenge/assets/98944012/a7c4736e-0033-4f4e-9cda-6cc57d3a25ee)
+
+## B. Data Extrapolation
 
 #### What day of the week is used for each week_date value?
 
 ```sql
-
+SELECT DAYNAME(week_date) AS day_of_week,
+	   COUNT(week_date)AS week_date_count
+FROM data_mart.clean_weekly_sales
+GROUP BY day_of_week;
 ```
+
+![SB_Q1](https://github.com/OmarCypha700/8WeekSQLChallenge/assets/98944012/21b4180d-7a5b-4cff-b0d1-52a73ffac37b)
 
 #### What range of week numbers are missing from the dataset?
 
 ```sql
-
+WITH RECURSIVE numbers AS (
+               SELECT 0 AS weeks
+               UNION
+               SELECT weeks + 1
+               FROM numbers
+               WHERE weeks < 52
+               )
+SELECT weeks FROM numbers 
+WHERE weeks NOT IN (
+					SELECT DISTINCT(week_number) AS week_number 
+					FROM data_mart.clean_weekly_sales
+                );
 ```
+
+![SB_Q2](https://github.com/OmarCypha700/8WeekSQLChallenge/assets/98944012/7e1088f4-5efc-4e6e-b863-47284571a7bc)
 
 #### How many total transactions were there for each year in the dataset?
 
 ```sql
-
+SELECT calendar_year,
+	   COUNT(transactions) AS total_transactions_count
+FROM data_mart.clean_weekly_sales
+GROUP BY calendar_year;
 ```
+
+![SB_Q3](https://github.com/OmarCypha700/8WeekSQLChallenge/assets/98944012/fe64e5f8-ddea-4c1f-ba3e-cb8e3748c48f)
 
 #### What is the total sales for each region for each month?
 
 ```sql
-
+SELECT region, MONTHNAME(week_date) AS month,
+	   SUM(sales) AS total_sales
+FROM data_mart.clean_weekly_sales
+GROUP BY region, month
+ORDER BY total_sales DESC;
 ```
+
+![SB_Q4](https://github.com/OmarCypha700/8WeekSQLChallenge/assets/98944012/e4dd8fa7-dbcb-4d91-ab8d-1713aa8213d5)
 
 #### What is the total count of transactions for each platform
 
 ```sql
-
+SELECT platform,
+	   COUNT(transactions) AS transactions_count
+FROM data_mart.clean_weekly_sales
+GROUP BY platform;
 ```
+
+![SB_Q5](https://github.com/OmarCypha700/8WeekSQLChallenge/assets/98944012/b1356004-ebc7-4a04-879d-7e43afbed32c)
 
 #### What is the percentage of sales for Retail vs Shopify for each month?
 
 ```sql
-
+SELECT
+    MONTHNAME(week_date) AS month,
+    SUM(CASE WHEN platform = 'Retail' THEN sales ELSE 0 END) AS retail_sales,
+    SUM(CASE WHEN platform = 'Shopify' THEN sales ELSE 0 END) AS shopify_sales,
+    ROUND((SUM(CASE WHEN platform = 'Retail' THEN sales ELSE 0 END) / SUM(sales)) * 100, 1) AS retail_percentage,
+    ROUND((SUM(CASE WHEN platform = 'Shopify' THEN sales ELSE 0 END) / SUM(sales)) * 100, 1) AS shopify_percentage
+FROM data_mart.clean_weekly_sales
+GROUP BY month;
 ```
+
+![SB_Q6](https://github.com/OmarCypha700/8WeekSQLChallenge/assets/98944012/c27a2c92-d920-4f5d-8c17-98e2aed1740f)
 
 #### What is the percentage of sales by demographic for each year in the dataset?
 
 ```sql
+SELECT
+    YEAR(week_date) AS year,
+    SUM(CASE WHEN demographic = 'Couples' THEN sales ELSE 0 END) AS couples_sales,
+	  ROUND((SUM(CASE WHEN demographic = 'Couples' THEN sales ELSE 0 END) / SUM(sales)) * 100, 1) AS couples_percentage,
+    SUM(CASE WHEN demographic = 'Families' THEN sales ELSE 0 END) AS families_sales,
+    ROUND((SUM(CASE WHEN demographic = 'Families' THEN sales ELSE 0 END) / SUM(sales)) * 100, 1) AS families_percentage,
+    SUM(CASE WHEN demographic = 'unknown' THEN sales ELSE 0 END) AS unknown_sales,
+    ROUND((SUM(CASE WHEN demographic = 'unknown' THEN sales ELSE 0 END) / SUM(sales)) * 100, 1) AS unknown_percentage
+FROM data_mart.clean_weekly_sales
+GROUP BY year;
 
 ```
+
+![SB_Q7](https://github.com/OmarCypha700/8WeekSQLChallenge/assets/98944012/574c1908-3d0e-480e-bcb8-35a40850e3aa)
 
 #### Which age_band and demographic values contribute the most to Retail sales?
 
 ```sql
-
+SELECT age_band,
+	   demographic,
+       SUM(sales) AS total_sales
+FROM data_mart.clean_weekly_sales
+WHERE platform = 'Retail' AND demographic != 'unknown'
+GROUP BY age_band, demographic
+ORDER BY total_sales DESC
+LIMIT 1;
 ```
+
+![SB_Q8](https://github.com/OmarCypha700/8WeekSQLChallenge/assets/98944012/9ae54207-5b74-46fd-9335-3aebac888978)
 
 #### Can we use the avg_transaction column to find the average transaction size for each year for Retail vs Shopify? If not - how would you calculate it instead?
 
 ```sql
-
+SELECT
+    YEAR(week_date) AS year,
+    ROUND(AVG(CASE WHEN platform = 'Retail' THEN avg_transaction END), 2) AS retail_avg_transaction,
+    ROUND(AVG(CASE WHEN platform = 'Shopify' THEN avg_transaction END), 2) AS shopify_avg_transaction
+FROM clean_weekly_sales
+GROUP BY year;
 ```
 
+![SB_Q9](https://github.com/OmarCypha700/8WeekSQLChallenge/assets/98944012/04f0abfa-9b0d-43e6-80db-715ac8fd24b2)
 
-## Before & After Analysis
+## C. Before & After Analysis
 
 This technique is usually used when we inspect an important event and want to inspect the impact before and after a certain point in time.
 
@@ -100,7 +211,7 @@ Using this analysis approach - answer the following questions:
 
 
 
-## Bonus Question
+## D. Bonus Question
 
 #### Which areas of the business have the highest negative impact in sales metrics performance in 2020 for the 12 week before and after period?
 

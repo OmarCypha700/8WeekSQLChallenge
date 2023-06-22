@@ -93,8 +93,8 @@ WITH RECURSIVE numbers AS (
                )
 SELECT weeks FROM numbers 
 WHERE weeks NOT IN (
-					SELECT DISTINCT(week_number) AS week_number 
-					FROM data_mart.clean_weekly_sales
+		  SELECT DISTINCT(week_number) AS week_number 
+		  FROM data_mart.clean_weekly_sales
                 );
 ```
 

@@ -205,11 +205,97 @@ We would include all week_date values for 2020-06-15 as the start of the period 
 
 Using this analysis approach - answer the following questions:
 
-- What is the total sales for the 4 weeks before and after 2020-06-15? What is the growth or reduction rate in actual values and percentage of sales?
-- What about the entire 12 weeks before and after?
-- How do the sale metrics for these 2 periods before and after compare with the previous years in 2018 and 2019?
+#### What is the total sales for the 4 weeks before and after 2020-06-15? What is the growth or reduction rate in actual values and percentage of sales?
 
+```sql
+SELECT total_sales_before, 
+       total_sales_after,
+       (total_sales_before - total_sales_after) AS sales_difference,
+       ROUND(((total_sales_after - total_sales_before) / total_sales_before) * 100, 1) AS growth_rate
+FROM (SELECT
+    SUM(CASE WHEN week_date BETWEEN DATE_SUB('2020-06-15', INTERVAL 4 WEEK) AND '2020-06-15' THEN sales ELSE 0 END) AS total_sales_before,
+    SUM(CASE WHEN week_date BETWEEN '2020-06-15' AND DATE_ADD('2020-06-15', INTERVAL 4 WEEK) THEN sales ELSE 0 END) AS total_sales_after
+FROM clean_weekly_sales
+) AS sales_before_and_after;
+```
 
+![SC_Q1](https://github.com/OmarCypha700/8WeekSQLChallenge/assets/98944012/b071b406-29d8-42eb-a930-873ffdf65565)
+
+#### What about the entire 12 weeks before and after?
+
+```sql
+SELECT total_sales_before, 
+       total_sales_after,
+       (total_sales_before - total_sales_after) AS sales_difference,
+       ROUND(((total_sales_after - total_sales_before) / total_sales_before) * 100, 1) AS growth_rate
+FROM (SELECT
+    SUM(CASE WHEN week_date BETWEEN DATE_SUB('2020-06-15', INTERVAL 12 WEEK) AND '2020-06-15' THEN sales ELSE 0 END) AS total_sales_before,
+    SUM(CASE WHEN week_date BETWEEN '2020-06-15' AND DATE_ADD('2020-06-15', INTERVAL 12 WEEK) THEN sales ELSE 0 END) AS total_sales_after
+FROM clean_weekly_sales
+) AS sales_before_and_after;
+```
+
+![SC_Q2](https://github.com/OmarCypha700/8WeekSQLChallenge/assets/98944012/94fa1568-2be0-4732-9e69-0eb72da5dba0)
+
+#### How do the sale metrics for these 2 periods before and after compare with the previous years in 2018 and 2019?
+
+```sql
+WITH sales_2020 AS (
+SELECT year,
+       (total_sales_after_12weeks - total_sales_before_12weeks) AS actual_value_12weeks, 
+       ROUND(((total_sales_after_12weeks - total_sales_before_12weeks) / total_sales_before_12weeks) * 100, 1) AS growth_rate_12weeks,
+       (total_sales_after_4weeks - total_sales_before_4weeks) AS actual_value_4weeks, 
+       ROUND(((total_sales_after_4weeks - total_sales_before_4weeks) / total_sales_before_4weeks) * 100, 1) AS growth_rate_4weeks
+FROM ( SELECT calendar_year AS year,
+       SUM(CASE WHEN week_date BETWEEN DATE_SUB('2020-06-15', INTERVAL 12 WEEK) AND '2020-06-15' THEN sales ELSE 0 END) AS total_sales_before_12weeks,
+       SUM(CASE WHEN week_date BETWEEN DATE_SUB('2020-06-15', INTERVAL 4 WEEK) AND '2020-06-15' THEN sales ELSE 0 END) AS total_sales_before_4weeks,
+       SUM(CASE WHEN week_date BETWEEN '2020-06-15' AND DATE_ADD('2020-06-15', INTERVAL 12 WEEK) THEN sales ELSE 0 END) AS total_sales_after_12weeks,
+       SUM(CASE WHEN week_date BETWEEN '2020-06-15' AND DATE_ADD('2020-06-15', INTERVAL 4 WEEK) THEN sales ELSE 0 END) AS total_sales_after_4weeks
+FROM data_mart.clean_weekly_sales
+GROUP BY year) AS sales_2020
+),
+sales_2019 AS (
+SELECT year,
+       (total_sales_after_12weeks - total_sales_before_12weeks) AS actual_value_12weeks, 
+       ROUND(((total_sales_after_12weeks - total_sales_before_12weeks) / total_sales_before_12weeks) * 100, 1) AS growth_rate_12weeks,
+       (total_sales_after_4weeks - total_sales_before_4weeks) AS actual_value_4weeks, 
+       ROUND(((total_sales_after_4weeks - total_sales_before_4weeks) / total_sales_before_4weeks) * 100, 1) AS growth_rate_4weeks
+FROM ( SELECT calendar_year AS year,
+       SUM(CASE WHEN week_date BETWEEN DATE_SUB('2019-06-15', INTERVAL 12 WEEK) AND '2019-06-15' THEN sales ELSE 0 END) AS total_sales_before_12weeks,
+       SUM(CASE WHEN week_date BETWEEN DATE_SUB('2019-06-15', INTERVAL 4 WEEK) AND '2019-06-15' THEN sales ELSE 0 END) AS total_sales_before_4weeks,
+       SUM(CASE WHEN week_date BETWEEN '2019-06-15' AND DATE_ADD('2019-06-15', INTERVAL 12 WEEK) THEN sales ELSE 0 END) AS total_sales_after_12weeks,
+       SUM(CASE WHEN week_date BETWEEN '2019-06-15' AND DATE_ADD('2019-06-15', INTERVAL 4 WEEK) THEN sales ELSE 0 END) AS total_sales_after_4weeks
+FROM data_mart.clean_weekly_sales
+GROUP BY year) AS sales_2019
+),
+sales_2018 AS (
+SELECT year,
+      (total_sales_after_12weeks - total_sales_before_12weeks) AS actual_value_12weeks, 
+      ROUND(((total_sales_after_12weeks - total_sales_before_12weeks) / total_sales_before_12weeks) * 100, 1) AS growth_rate_12weeks,
+      (total_sales_after_4weeks - total_sales_before_4weeks) AS actual_value_4weeks, 
+      ROUND(((total_sales_after_4weeks - total_sales_before_4weeks) / total_sales_before_4weeks) * 100, 1) AS growth_rate_4weeks
+FROM ( SELECT calendar_year AS year,
+       SUM(CASE WHEN week_date BETWEEN DATE_SUB('2018-06-15', INTERVAL 12 WEEK) AND '2018-06-15' THEN sales ELSE 0 END) AS total_sales_before_12weeks,
+       SUM(CASE WHEN week_date BETWEEN DATE_SUB('2018-06-15', INTERVAL 4 WEEK) AND '2018-06-15' THEN sales ELSE 0 END) AS total_sales_before_4weeks,
+       SUM(CASE WHEN week_date BETWEEN '2018-06-15' AND DATE_ADD('2018-06-15', INTERVAL 12 WEEK) THEN sales ELSE 0 END) AS total_sales_after_12weeks,
+       SUM(CASE WHEN week_date BETWEEN '2018-06-15' AND DATE_ADD('2018-06-15', INTERVAL 4 WEEK) THEN sales ELSE 0 END) AS total_sales_after_4weeks
+FROM data_mart.clean_weekly_sales
+GROUP BY year) AS sales_2018
+)
+SELECT *
+FROM sales_2020
+WHERE growth_rate_4weeks IS NOT NULL AND growth_rate_12weeks IS NOT NULL
+UNION
+SELECT *
+FROM sales_2019
+WHERE growth_rate_4weeks IS NOT NULL AND growth_rate_12weeks IS NOT NULL
+UNION
+SELECT *
+FROM sales_2018
+WHERE growth_rate_4weeks IS NOT NULL AND growth_rate_12weeks IS NOT NULL;
+```
+
+![SC_Q3](https://github.com/OmarCypha700/8WeekSQLChallenge/assets/98944012/aaaeb3e5-39dc-4e83-9d25-f79ef5006900)
 
 ## D. Bonus Question
 

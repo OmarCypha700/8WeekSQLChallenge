@@ -3,8 +3,8 @@
 ## Table of Contents
 - [Data Cleaning Steps](#a-data-cleaning-steps)
 - [Data Extrapolation](#b-data-extrapolation)
-- [Before & After Analysis](#c-before-&-after-analysis)
-- [Bonus Question](#d-bonus-questions)
+- [Before & After Analysis](#c-before-and-after-analysis)
+- [Bonus Question](#d-bonus-question)
 
 ## A. Data Cleaning Steps
 
@@ -195,7 +195,7 @@ GROUP BY year;
 
 ![SB_Q9](https://github.com/OmarCypha700/8WeekSQLChallenge/assets/98944012/04f0abfa-9b0d-43e6-80db-715ac8fd24b2)
 
-## C. Before & After Analysis
+## C. Before And After Analysis
 
 This technique is usually used when we inspect an important event and want to inspect the impact before and after a certain point in time.
 

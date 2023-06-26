@@ -309,4 +309,105 @@ WHERE growth_rate_4weeks IS NOT NULL AND growth_rate_12weeks IS NOT NULL;
   
 Do you have any further recommendations for Danny’s team at Data Mart or any interesting insights based off this analysis?
 
+```sql
+WITH region AS (
+SELECT year, region,
+       total_sales_before, 
+       total_sales_after,
+       (total_sales_before - total_sales_after) AS sales_difference,
+       ROUND(((total_sales_after - total_sales_before) / total_sales_before) * 100, 1) AS growth_rate
+FROM (
+      SELECT 
+      calendar_year AS year, 
+      region,
+      SUM(CASE WHEN week_date BETWEEN DATE_SUB('2020-06-15', INTERVAL 12 WEEK) AND '2020-06-15' THEN sales ELSE 0 END) AS total_sales_before,
+      SUM(CASE WHEN week_date BETWEEN '2020-06-15' AND DATE_ADD('2020-06-15', INTERVAL 12 WEEK) THEN sales ELSE 0 END) AS total_sales_after
+FROM clean_weekly_sales
+WHERE calendar_year = '2020'
+GROUP BY region, year
+) AS region
+),
+platform AS (
+SELECT year, platform,
+       total_sales_before, 
+       total_sales_after,
+       (total_sales_before - total_sales_after) AS sales_difference,
+       ROUND(((total_sales_after - total_sales_before) / total_sales_before) * 100, 1) AS growth_rate
+FROM (
+      SELECT 
+      calendar_year AS year, 
+      platform,
+      SUM(CASE WHEN week_date BETWEEN DATE_SUB('2020-06-15', INTERVAL 12 WEEK) AND '2020-06-15' THEN sales ELSE 0 END) AS total_sales_before,
+      SUM(CASE WHEN week_date BETWEEN '2020-06-15' AND DATE_ADD('2020-06-15', INTERVAL 12 WEEK) THEN sales ELSE 0 END) AS total_sales_after
+FROM clean_weekly_sales
+WHERE calendar_year = '2020'
+GROUP BY platform, year
+) AS platform
+),
+age_band AS (
+SELECT year, age_band,
+       total_sales_before, 
+       total_sales_after,
+       (total_sales_before - total_sales_after) AS sales_difference,
+       ROUND(((total_sales_after - total_sales_before) / total_sales_before) * 100, 1) AS growth_rate
+FROM (
+      SELECT 
+      calendar_year AS year, 
+      age_band,
+      SUM(CASE WHEN week_date BETWEEN DATE_SUB('2020-06-15', INTERVAL 12 WEEK) AND '2020-06-15' THEN sales ELSE 0 END) AS total_sales_before,
+      SUM(CASE WHEN week_date BETWEEN '2020-06-15' AND DATE_ADD('2020-06-15', INTERVAL 12 WEEK) THEN sales ELSE 0 END) AS total_sales_after
+FROM clean_weekly_sales
+WHERE calendar_year = '2020'
+GROUP BY age_band, year
+) AS age_band
+),
+demographic AS (
+       SELECT year, 
+       demographic,
+       total_sales_before, 
+       total_sales_after,
+       (total_sales_before - total_sales_after) AS sales_difference,
+       ROUND(((total_sales_after - total_sales_before) / total_sales_before) * 100, 1) AS growth_rate
+FROM (
+SELECT 
+      calendar_year AS year, 
+      demographic,
+      SUM(CASE WHEN week_date BETWEEN DATE_SUB('2020-06-15', INTERVAL 12 WEEK) AND '2020-06-15' THEN sales ELSE 0 END) AS total_sales_before,
+      SUM(CASE WHEN week_date BETWEEN '2020-06-15' AND DATE_ADD('2020-06-15', INTERVAL 12 WEEK) THEN sales ELSE 0 END) AS total_sales_after
+FROM clean_weekly_sales
+WHERE calendar_year = '2020'
+GROUP BY demographic, year
+) AS demographic
+),
+customer_type AS (
+SELECT year, customer_type,
+       total_sales_before, 
+       total_sales_after,
+       (total_sales_before - total_sales_after) AS sales_difference,
+       ROUND(((total_sales_after - total_sales_before) / total_sales_before) * 100, 1) AS growth_rate
+FROM (
+SELECT 
+      calendar_year AS year, 
+      customer_type,
+      SUM(CASE WHEN week_date BETWEEN DATE_SUB('2020-06-15', INTERVAL 12 WEEK) AND '2020-06-15' THEN sales ELSE 0 END) AS total_sales_before,
+      SUM(CASE WHEN week_date BETWEEN '2020-06-15' AND DATE_ADD('2020-06-15', INTERVAL 12 WEEK) THEN sales ELSE 0 END) AS total_sales_after
+FROM clean_weekly_sales
+WHERE calendar_year = '2020'
+GROUP BY customer_type, year
+) AS customer_type
+)
+SELECT year,
+	ROUND(AVG(r.growth_rate),1) AS region_impact,
+       ROUND(AVG(p.growth_rate),1) AS platform_impact,
+       ROUND(AVG(ab.growth_rate),1) AS age_band_impact,
+       ROUND(AVG(d.growth_rate),1) AS demographic_impact,
+       ROUND(AVG(ct.growth_rate),1) AS customer_type_impact
+FROM region AS r
+JOIN platform AS p USING (year)
+JOIN age_band AS ab USING (year)
+JOIN demographic AS d USING (year)
+JOIN customer_type AS ct USING (year)
+GROUP BY year;
+```
 
+![SD_Q1](https://github.com/OmarCypha700/8WeekSQLChallenge/assets/98944012/9c140217-9480-43c2-bf37-a54f2ceea92d)

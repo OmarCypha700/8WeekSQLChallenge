@@ -354,10 +354,4 @@ Regularly measuring customer satisfaction through surveys, feedback, or ratings.
 11. Any additional comments or feedback you would like to share?
 ```
 
-
-
-
-
-
-
-
+## CHECK OUT [WEEK 4](https://github.com/OmarCypha700/8WeekSQLChallenge/blob/main/WEEK%204:%20Data%20Bank.md) SOLUTION.

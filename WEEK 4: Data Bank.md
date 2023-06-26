@@ -320,18 +320,4 @@ In this query, the data allocation for each option is calculated by applying the
 Option 1 and Option 2 use a monthly interest rate, while Option 3 applies daily compounding interest over 30 days. 
 The results are grouped by month to provide the data required for each option on a monthly basis.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## CHECK OUT [WEEK 5](https://github.com/OmarCypha700/8WeekSQLChallenge/blob/main/WEEK%205:%20Data%20Mart.md) SOLUTION.
